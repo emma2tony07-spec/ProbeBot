@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bybit Trading Bot</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <!-- Setup Section -->
+    <div id="setupSection" class="setup-section">
+        <div class="setup-container">
+            <h1>🤖 Bybit Trading Bot</h1>
+            <p class="subtitle">Connect your Bybit Testnet API to get started</p>
+            
+            <form id="setupForm" class="setup-form">
+                <div class="form-group">
+                    <label for="apiKey">API Key</label>
+                    <input 
+                        type="text" 
+                        id="apiKey" 
+                        placeholder="Enter your Bybit Testnet API Key" 
+                        required
+                    />
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiSecret">API Secret</label>
+                    <input 
+                        type="password" 
+                        id="apiSecret" 
+                        placeholder="Enter your Bybit Testnet API Secret" 
+                        required
+                    />
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Connect & Initialize</button>
+                
+                <div class="info-box">
+                    <strong>⚠️ Testnet Only</strong>
+                    <p>This bot is configured for Bybit Testnet. Get your API keys from <a href="https://testnet.bybit.com/" target="_blank">testnet.bybit.com</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Trading Interface -->
+    <div id="mainSection" class="main-section" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🤖 Bybit Trading Bot</h1>
+                <div class="bot-status-container">
+                    <div class="status-indicator stopped" id="botStatus"></div>
+                    <span id="botStatusText">Stopped</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Balance</div>
+                <div class="stat-value" id="balance">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Value</div>
+                <div class="stat-value" id="totalValue">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">P/L</div>
+                <div class="stat-value" id="profitLoss">$0.00</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ROI</div>
+                <div class="stat-value" id="roi">0.00%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Open Positions</div>
+                <div class="stat-value" id="openPositions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Trades</div>
+                <div class="stat-value" id="totalTrades">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Win Rate</div>
+                <div class="stat-value" id="winRate">0.0%</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-section">
+            <div class="controls-card">
+                <h3>Bot Controls</h3>
+                <div class="button-group">
+                    <button id="startBtn" class="btn btn-success">▶ Start</button>
+                    <button id="pauseBtn" class="btn btn-warning" style="display: none;">⏸ Pause</button>
+                    <button id="resumeBtn" class="btn btn-success" style="display: none;">▶ Resume</button>
+                    <button id="stopBtn" class="btn btn-danger" style="display: none;">⏹ Stop</button>
+                    <button id="emergencyBtn" class="btn btn-emergency">🚨 Emergency Stop</button>
+                    <button id="resetBtn" class="btn btn-secondary">🔄 Reset</button>
+                </div>
+            </div>
+
+            <div class="controls-card">
+                <h3>Trading Configuration</h3>
+                <form id="configForm" class="config-form">
+                    <div class="config-row">
+                        <label>
+                            Buy Threshold (%):
+                            <input type="number" id="buyThreshold" value="2" step="0.1" min="0.1" />
+                        </label>
+                        <label>
+                            Sell Threshold (%):
+                            <input type="number" id="sellThreshold" value="3" step="0.1" min="0.1" />
+                        </label>
+                        <label>
+                            Trade Amount (%):
+                            <input type="number" id="tradeAmount" value="25" step="1" min="1" max="100" />
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Config</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Open Positions -->
+            <div class="section-card full-width">
+                <h3>📊 Open Positions</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Buy Price</th>
+                                <th>Current Price</th>
+                                <th>Peak Price</th>
+                                <th>Profit %</th>
+                                <th>Drop from Peak</th>
+                                <th>P/L</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positionsBody">
+                            <tr><td colspan="7" class="no-data">No open positions</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monitored Tokens -->
+            <div class="section-card">
+                <h3>👁️ Monitored Tokens</h3>
+                <div id="tokensList" class="tokens-grid">
+                    <div class="no-data">No tokens monitored</div>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="section-card">
+                <h3>📜 Trade History (Last 10)</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Token</th>
+                                <th>Price</th>
+                                <th>Amount</th>
+                                <th>Total</th>
+                                <th>P/L</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr><td colspan="7" class="no-data">No trade history</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="scripts/main.js"></script>
+</body>
+</html>
